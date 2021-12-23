@@ -1,0 +1,63 @@
+#!/usr/bin/wish
+wm title . "calc"
+proc make {parent name} {
+    button ".$name" -text $name
+}
+
+proc make_buttons {parent from to} {
+    frame ".$parent"
+    for {set i $from} {$i <= $to} {incr i} {
+	button ".$parent.$i" -text $i -command "
+	    set value \[expr \$value*10+$i\]
+	"
+    }
+}
+
+make_buttons "fm1" 7 9
+button .fm1.div -text "/" -command {
+    set previous [expr $previous $op $value]
+    set op "/" 
+    set value 0
+}
+
+make_buttons "fm2" 4 6
+button .fm2.mul -text "*" -command {
+    set previous [expr $previous $op $value]
+    set op "*"
+    set value 0
+}
+
+make_buttons "fm3" 1 3
+button .fm3.minus -text "-" -command {
+    set previous [expr $previous $op $value]
+    set op "-" 
+    set value 0
+}
+
+make_buttons "fm4" 0 0
+button .fm4.eq    -text "=" -command {
+    set value [expr $previous $op $value]
+}
+
+button .fm4.plus  -text "+" -command { 
+    set previous [expr $previous $op $value]
+    set op "+" 
+    set value 0
+}
+
+button .fm4.clear -text "C" -command { 
+    set op "+"
+    set previous 0
+    set value 0
+}
+
+set op "+"
+set previous  0
+set value 0
+label .value -textvariable value
+
+pack .fm1.7 .fm1.8 .fm1.9 .fm1.div -side left
+pack .fm2.4 .fm2.5 .fm2.6 .fm2.mul -side left
+pack .fm3.1 .fm3.2 .fm3.3 .fm3.minus -side left
+pack .fm4.0 .fm4.plus .fm4.eq .fm4.clear -side left
+pack .value .fm1 .fm2 .fm3 .fm4 -fill x

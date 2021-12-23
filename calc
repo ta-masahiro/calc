@@ -1,0 +1,150 @@
+#!/usr/bin/wish
+# button layout 
+set row_nums	3 ;	# [0-9] + - / * . e
+set row_exe	7 ;	# EXE CLR ( )
+set row_cursol	1 ;	# <- -> BS DEL
+set row_func	2 ;	# FUNC
+
+# button color
+set color_cursol  #FF8080
+set color_func    #FFFF80
+set color_arith   #80FF80
+set color_exe     #8080FF
+
+# font setting
+#set font_args		{Tahoma 12}
+set font_args		{Tahoma 10}
+# button size
+#set btn_w	120
+set btn_w	60
+#set btn_h	80
+set btn_h	40
+
+# menu
+menu .m -type menubar
+. configure -menu .m
+.m	add command -label "EXIT" -font $font_args -command "exit"
+
+# entry
+entry .e -width 24 -font $font_args
+place .e -x 0 -y 0 -width [expr $btn_w * 4] -height $btn_h
+
+# number button
+for {set i 0} {$i < 10} {incr i} {
+	button .b_$i -text $i -font $font_args -command "insert-str $i"
+}
+
+for {set i 1} {$i < 10} {incr i} {
+	place .b_$i -x [expr $btn_w * (($i - 1) % 3)] -y [expr $btn_h * ($row_nums + 2 - (($i - 1) / 3))] -width $btn_w -height $btn_h
+}
+place	.b_0	 -x [expr $btn_w * 0]	-y [expr $btn_h * ($row_nums + 3)]	-width $btn_w	-height $btn_h
+
+button	.b_dot	-text "."	-font $font_args	-command "insert-str ."
+place	.b_dot	 -x [expr $btn_w * 1]	-y [expr $btn_h * ($row_nums + 3)]	-width $btn_w	-height $btn_h
+
+button	.b_e	-text "e"	-font $font_args	-command "insert-str e"
+place	.b_e	 -x [expr $btn_w * 2]	-y [expr $btn_h * ($row_nums + 3)]	-width $btn_w	-height $btn_h
+
+# bracket
+button	.b_bra_l	-text "("	-font $font_args -command "insert-str ("
+place	.b_bra_l	 -x 0					-y [expr $btn_h * $row_exe]	-width $btn_w	-height $btn_h
+
+button	.b_bra_r	-text ")"	-font $font_args -command "insert-str )"
+place	.b_bra_r	 -x [expr $btn_w * 1]	-y [expr $btn_h * $row_exe]	-width $btn_w	-height $btn_h
+
+# / * - +
+button	.b_div	-text "/"	-bg $color_arith	-font $font_args	-command "insert-str /"
+place	.b_div	 -x [expr $btn_w * 3]	-y [expr $btn_h * ($row_nums + 0)]	-width $btn_w	-height $btn_h
+
+button	.b_mul	-text "*"	-bg $color_arith	-font $font_args	-command "insert-str *"
+place	.b_mul	 -x [expr $btn_w * 3]	-y [expr $btn_h * ($row_nums + 1)]	-width $btn_w	-height $btn_h
+
+button	.b_sub	-text "-"	-bg $color_arith	-font $font_args	-command "insert-str -"
+place	.b_sub	 -x [expr $btn_w * 3]	-y [expr $btn_h * ($row_nums + 2)]	-width $btn_w	-height $btn_h
+
+button	.b_plus	-text "+"	-bg $color_arith	-font $font_args	-command "insert-str +"
+place	.b_plus	 -x [expr $btn_w * 3]	-y [expr $btn_h * ($row_nums + 3)]	-width $btn_w	-height $btn_h
+
+# execute
+button .b_exe -text "EXE" -bg $color_exe	-font $font_args -command "exec-calc"
+place	.b_exe	 -x [expr $btn_w * 3]	-y [expr $btn_h * $row_exe]	-width $btn_w	-height $btn_h
+
+# clear
+button .b_clr -text "CLR" -bg $color_exe	-font $font_args -command "clear-line"
+place	.b_clr	 -x [expr $btn_w * 2]	-y [expr $btn_h * $row_exe]	-width $btn_w	-height $btn_h
+
+# move
+button	.b_mov_l	-text "<-"	-bg $color_cursol	-font $font_args -command "event generate .e <Left>"
+place	.b_mov_l	-x [expr $btn_w * 2]	-y [expr $btn_h * $row_cursol]	-width $btn_w	-height $btn_h
+
+button	.b_mov_r	-text "->"	-bg $color_cursol	-font $font_args -command "event generate .e <Right>"
+place	.b_mov_r	-x [expr $btn_w * 3]	-y [expr $btn_h * $row_cursol]	-width $btn_w	-height $btn_h
+
+button	.b_bs		-text "BS"	-bg $color_cursol	-font $font_args -command "event generate .e <BackSpace>"
+place	.b_bs		-x [expr $btn_w * 0]	-y [expr $btn_h * $row_cursol]	-width $btn_w	-height $btn_h
+
+button	.b_del		-text "DEL"	-bg $color_cursol	-font $font_args -command "event generate .e <Delete>"
+place	.b_del		-x [expr $btn_w * 1]	-y [expr $btn_h * $row_cursol]	-width $btn_w	-height $btn_h
+
+# other math func
+foreach n {sin cos tan asin acos atan sinh cosh tanh log log10 exp} {
+	button .b_$n -text $n -bg $color_func	-font $font_args -command "sandwich-str $n"
+}
+
+button	.b_func	-text FUNC	-bg $color_func	-font $font_args -command "change_functions"
+place	.b_func	-x [expr $btn_w * 0]	-y [expr $btn_h * $row_func]	-width $btn_w	-height $btn_h
+
+proc insert-str {str} {
+	.e insert insert $str
+	focus .e
+}
+
+proc sandwich-str {str} {
+	.e insert 0 "("
+	.e insert 0 $str
+	.e insert end ")"
+	focus .e
+}
+
+proc exec-calc {} {
+	set txt [.e get]
+	.e delete 0 end
+	if {$txt != ""} {
+		.e insert insert [expr $txt]
+	}
+}
+
+proc clear-line {} { .e delete 0 end }
+
+set func_select	3
+proc change_functions {} {
+	global	row_func
+	global	func_select
+
+	set func_select [expr $func_select + 1]
+	if {$func_select >= 4} {set func_select 0}
+	
+	switch $func_select {
+		0	{ set_functions_buttons {.b_sin .b_cos .b_tan} }
+		1	{ set_functions_buttons {.b_asin .b_acos .b_atan} }
+		2	{ set_functions_buttons {.b_sinh .b_cosh .b_tanh} }
+		3	{ set_functions_buttons {.b_log .b_log10 .b_exp} }
+	}
+}
+
+proc set_functions_buttons {btnlst} {
+	global	row_func btn_w btn_h
+	for {set i 0} {$i < 3} {incr i} {
+		place	[lindex $btnlst $i]	-x [expr $btn_w * (1 + $i)]	-y [expr $btn_h * $row_func]	-width $btn_w	-height $btn_h
+		raise	[lindex $btnlst $i]
+	}
+}
+
+# . configure -width 480 -height 640
+. configure -width 240 -height 320
+
+change_functions
+
+bind .e <Return> { exec-calc }
+
+focus .e
